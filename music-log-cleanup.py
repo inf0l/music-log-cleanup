@@ -1,12 +1,29 @@
 #!/usr/bin/env python3
 # Utility to parse and clean up xlsx exported from PGPTSession.
 
+import argparse, os
 import pandas as pd
 from timecode import Timecode
-from pprint import pprint
 
-readfile = pd.read_excel(
-    './EARTHRISE WILD RECOVERY-PG3 MUSIC LIST TRACK ORDER.xlsx')
+
+def parse_filename():
+    parser = argparse.ArgumentParser(
+        description='Process command line arguments.')
+    parser.add_argument('-f', type=file_path)
+    return parser.parse_args()
+
+
+def file_path(file):
+    if os.path.isfile(file):
+        return file
+    else:
+        raise argparse.ArgumentTypeError(
+            f"readable_file:{file} is not a valid file")
+
+
+filename = parse_filename()
+
+readfile = pd.read_excel(filename.f)
 
 df = pd.DataFrame(readfile)
 
@@ -40,13 +57,14 @@ for currtrack in tracklist:
     else:
         tracks.append(currtrack)
 
-df2 = pd.DataFrame(tracks, columns=list(["Track Name", "TC IN", "TC OUT"]))
+# Calculate duration
+for track in tracks:
+    track.append(Timecode('25', track[2]) - Timecode('25', track[1]))
+
+df2 = pd.DataFrame(tracks,
+                   columns=list(
+                       ["Track Name", "TC IN", "TC OUT", "TC DURATION"]))
 df2.sort_values(['TC IN'], inplace=True)
 
-# Calculate duration
-df2['TC DURATION'] = df1.apply(
-    lambda row: Timecode('25', row['TC OUT']) - Timecode('25', row['TC IN']),
-    axis=1)
-
-df2.to_excel("output.xlsx", index=False)
-pprint(df2)
+outfile = filename.f.split('-')[0].split('/')[-1]
+df2.to_excel(f"~/Desktop/{outfile}.xlsx", sheet_name=f"{outfile}", index=False)

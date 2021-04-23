@@ -1,2 +1,5 @@
 # music-log-cleanup
-Work in progress... Test file is hardcoded while I work out how to use readline/tab-completion for the input.
+Work in progress... 
+
+## Usage
+Run `python music-log-cleanup.py -f {path_to_filename}`. Will output a new Excel file to Desktop.
